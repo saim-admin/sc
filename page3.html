@@ -179,29 +179,14 @@
 
         const inputPower = parseFloat(inputPowerRaw) || 0;
 
-        // Standard PLC splitter ratios with typical insertion loss (dB)
-        const splitterTable = [
-            { users: 64, loss: 20.5 },
-            { users: 32, loss: 17.0 },
-            { users: 16, loss: 13.8 },
-            { users: 8, loss: 10.5 },
-            { users: 4, loss: 7.2 },
-            { users: 2, loss: 3.8 }
-        ];
-
         // Fixed connector + splice + safety margin losses
         const fixedLoss = 1.4;
 
         const threshold = -25;
 
-        let maxUsers = 0;
-        for (const opt of splitterTable) {
-            const finalPower = inputPower - opt.loss - fixedLoss;
-            if (finalPower >= threshold) {
-                maxUsers = opt.users;
-                break;
-            }
-        }
+        // Solve directly for max N from available power budget (no fixed upper limit)
+        const availableBudget = inputPower - fixedLoss - threshold;
+        const maxUsers = availableBudget >= 0 ? Math.floor(Math.pow(10, availableBudget / 10)) : 0;
 
         resEl.innerText = maxUsers > 0 ? maxUsers : "সম্ভব নয়";
     }
