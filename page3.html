@@ -164,6 +164,8 @@
     <div class="result-box">
         <div class="result-label">সর্বোচ্চ ইউজার সংখ্যা</div>
         <div class="result-value" id="resMaxUsers">-</div>
+        <div class="result-label" id="resSuggestedSplitter" style="margin-top: 10px; color: var(--accent-blue); font-weight: bold; font-size: 15px;"></div>
+        <div class="result-label" id="resOnuPower" style="margin-top: 5px; color: #f4b942; font-weight: bold; font-size: 15px;"></div>
     </div>
 </div>
 
@@ -171,9 +173,13 @@
     function calculateMaxUsers() {
         const inputPowerRaw = document.getElementById('inputPower').value;
         const resEl = document.getElementById('resMaxUsers');
+        const suggestEl = document.getElementById('resSuggestedSplitter');
+        const onuPowerEl = document.getElementById('resOnuPower');
 
         if (inputPowerRaw === "") {
             resEl.innerText = "-";
+            suggestEl.innerText = "";
+            onuPowerEl.innerText = "";
             return;
         }
 
@@ -189,6 +195,25 @@
         const maxUsers = availableBudget >= 0 ? Math.floor(Math.pow(10, availableBudget / 10)) : 0;
 
         resEl.innerText = maxUsers > 0 ? maxUsers : "সম্ভব নয়";
+
+        // Suggest the largest standard splitter ratio that fits within maxUsers
+        const standardSplitters = [128, 64, 32, 16, 8, 4, 2];
+        let suggested = null;
+        for (const s of standardSplitters) {
+            if (s <= maxUsers) {
+                suggested = s;
+                break;
+            }
+        }
+
+        suggestEl.innerText = suggested ? `প্রস্তাবিত স্প্লিটার: 1:${suggested}` : "";
+
+        if (suggested) {
+            const onuPower = inputPower - (10 * Math.log10(suggested)) - fixedLoss;
+            onuPowerEl.innerText = `প্রতিটি ONU-তে পাওয়ার: ${onuPower.toFixed(2)} dBm`;
+        } else {
+            onuPowerEl.innerText = "";
+        }
     }
 </script>
 
